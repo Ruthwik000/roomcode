@@ -89,14 +89,10 @@ function activate(context) {
     // Fetch Problem from UI Command
     let fetchFromUICommand = vscode.commands.registerCommand('competitiveCoding.fetchProblemFromUI', async (platform, problemUrl) => {
         try {
-            vscode.window.showInformationMessage('Fetching problem...');
+            vscode.window.showInformationMessage('Fetching problem from HackerRank...');
             
-            let problemData;
-            if (platform === 'AtCoder') {
-                problemData = await atcoder.fetchProblem(problemUrl);
-            } else {
-                problemData = await hackerrank.fetchProblem(problemUrl);
-            }
+            // Always use HackerRank
+            const problemData = await hackerrank.fetchProblem(problemUrl);
 
             // Store current problem data
             currentProblemData = problemData;
@@ -108,7 +104,13 @@ function activate(context) {
             // Create workspace folder for problem
             const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
             if (!workspaceFolder) {
-                vscode.window.showErrorMessage('Please open a workspace folder first');
+                const action = await vscode.window.showErrorMessage(
+                    'No folder is open. Please open a folder first (File > Open Folder)',
+                    'Help'
+                );
+                if (action === 'Help') {
+                    vscode.window.showInformationMessage('Go to File menu > Open Folder, then select or create a folder for your coding problems');
+                }
                 return;
             }
 
@@ -139,28 +141,17 @@ function activate(context) {
 
     // Fetch Problem Command (legacy)
     let fetchCommand = vscode.commands.registerCommand('competitiveCoding.fetchProblem', async () => {
-        const platform = await vscode.window.showQuickPick(['AtCoder', 'HackerRank'], {
-            placeHolder: 'Select platform'
-        });
-
-        if (!platform) return;
-
         const problemUrl = await vscode.window.showInputBox({
-            prompt: 'Enter problem URL',
-            placeHolder: 'https://...'
+            prompt: 'Enter HackerRank problem URL',
+            placeHolder: 'https://www.hackerrank.com/challenges/...'
         });
 
         if (!problemUrl) return;
 
         try {
-            vscode.window.showInformationMessage('Fetching problem...');
+            vscode.window.showInformationMessage('Fetching problem from HackerRank...');
             
-            let problemData;
-            if (platform === 'AtCoder') {
-                problemData = await atcoder.fetchProblem(problemUrl);
-            } else {
-                problemData = await hackerrank.fetchProblem(problemUrl);
-            }
+            const problemData = await hackerrank.fetchProblem(problemUrl);
 
             // Store current problem data
             currentProblemData = problemData;
@@ -172,7 +163,13 @@ function activate(context) {
             // Create workspace folder for problem
             const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
             if (!workspaceFolder) {
-                vscode.window.showErrorMessage('Please open a workspace folder first');
+                const action = await vscode.window.showErrorMessage(
+                    'No folder is open. Please open a folder first (File > Open Folder)',
+                    'Help'
+                );
+                if (action === 'Help') {
+                    vscode.window.showInformationMessage('Go to File menu > Open Folder, then select or create a folder for your coding problems');
+                }
                 return;
             }
 

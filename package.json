@@ -1,13 +1,26 @@
 {
   "name": "competitive-coding-helper",
   "displayName": "Competitive Coding Helper",
-  "description": "Fetch problems and submit solutions to AtCoder and HackerRank",
+  "description": "Practice competitive programming with random problems, automated testing, and smart test case generation",
   "version": "1.0.0",
+  "publisher": "your-publisher-name",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ruthwik000/roomcode.git"
+  },
   "engines": {
     "vscode": "^1.60.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Education"
+  ],
+  "keywords": [
+    "competitive programming",
+    "hackerrank",
+    "coding practice",
+    "algorithms",
+    "test runner"
   ],
   "activationEvents": [
     "onCommand:competitiveCoding.fetchProblem",

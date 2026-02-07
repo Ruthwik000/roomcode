@@ -49,42 +49,44 @@ async function fetchProblem(url) {
         const response = await client.get(`https://www.hackerrank.com/rest/contests/master/challenges/${slug}`, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Accept-Charset': 'utf-8'
             }
         });
         const data = response.data.model;
 
-        // Parse HTML body to extract sections
-        const $ = cheerio.load(data.body_html || '');
+        // Parse HTML body to extract sections - preserve special characters
+        const $ = cheerio.load(data.body_html || '', { decodeEntities: true });
         
-        // Extract problem statement - get all text content
+        // Extract problem statement - get all text content with proper formatting
         let description = '';
         let inputFormat = '';
         let outputFormat = '';
         const constraints = [];
         
-        // Get the main problem description
+        // Get the main problem description with better text extraction
         const problemStatement = $('.challenge-body-html, .problem-statement').first();
         if (problemStatement.length) {
-            description = problemStatement.text().trim();
-        } else {
-            // Fallback: get first substantial paragraph
-            $('p').each((i, elem) => {
-                const text = $(elem).text().trim();
-                if (!description && text.length > 30) {
-                    description = text;
-                }
-            });
+            // Get HTML and convert to readable text while preserving structure
+            description = problemStatement.text().trim().replace(/\s+/g, ' ');
         }
 
-        // If still no description, use preview
-        if (!description) {
-            description = data.preview || 'No description available';
+        // If still no description, try getting from preview or body
+        if (!description || description.length < 50) {
+            description = data.preview || '';
+            
+            // Try to extract from body_html directly
+            if (!description && data.body_html) {
+                const bodyText = $('body').text().trim();
+                if (bodyText.length > 50) {
+                    description = bodyText.substring(0, 1000); // First 1000 chars
+                }
+            }
         }
 
         // Look for specific sections with better parsing
         let currentSection = '';
-        $('h3, h4, h5, strong, p, pre, ul, li').each((i, elem) => {
+        $('h3, h4, h5, strong, p, pre, ul, li, div.challenge-text').each((i, elem) => {
             const $elem = $(elem);
             const text = $elem.text().trim();
             const tagName = elem.name;
@@ -98,49 +100,73 @@ async function fetchProblem(url) {
                     currentSection = 'output';
                 } else if (heading.includes('constraint')) {
                     currentSection = 'constraints';
-                } else if (heading.includes('problem statement') || heading.includes('task')) {
+                } else if (heading.includes('problem statement') || heading.includes('task') || heading.includes('problem description')) {
                     currentSection = 'description';
                 } else {
                     currentSection = '';
                 }
             } else {
                 // Add content to current section
-                if (currentSection === 'input' && text) {
+                if (currentSection === 'input' && text && text.length > 5) {
                     inputFormat += text + '\n';
-                } else if (currentSection === 'output' && text) {
+                } else if (currentSection === 'output' && text && text.length > 5) {
                     outputFormat += text + '\n';
                 } else if (currentSection === 'constraints' && text) {
-                    if (tagName === 'li' || text.includes('≤') || text.includes('<=')) {
+                    if (tagName === 'li' || text.includes('≤') || text.includes('<=') || text.includes('≥') || text.includes('>=')) {
                         constraints.push(text);
                     }
+                } else if (currentSection === 'description' && text && text.length > 10) {
+                    description += ' ' + text;
                 }
             }
         });
 
-        // Extract test cases
+        // Extract ALL test cases (sample + hidden if available)
         const testCases = [];
+        
+        // First try sample_testcases from API
         if (data.sample_testcases) {
             const cases = data.sample_testcases.split('\n\n');
             for (let i = 0; i < cases.length; i += 2) {
                 if (cases[i]) {
                     testCases.push({
                         input: cases[i].trim(),
-                        output: cases[i + 1]?.trim() || ''
+                        output: cases[i + 1]?.trim() || '',
+                        sample: true
                     });
                 }
             }
         }
 
+        // Also try to extract from HTML
+        $('.challenge-sample-input, .sample-input').each((i, elem) => {
+            const input = $(elem).find('pre').text().trim();
+            const outputElem = $(elem).next('.challenge-sample-output, .sample-output');
+            const output = outputElem.find('pre').text().trim();
+            
+            if (input && !testCases.some(tc => tc.input === input)) {
+                testCases.push({
+                    input: input,
+                    output: output,
+                    sample: true
+                });
+            }
+        });
+
+        // Clean up description - remove extra whitespace but preserve structure
+        description = description.trim().replace(/\s+/g, ' ');
+
         return {
             id: slug,
-            title: data.name,
-            description: description.trim(),
-            inputFormat: inputFormat.trim(),
-            outputFormat: outputFormat.trim(),
+            title: data.name || 'Untitled Problem',
+            description: description || 'No description available',
+            inputFormat: inputFormat.trim() || 'See problem description',
+            outputFormat: outputFormat.trim() || 'See problem description',
             constraints: constraints.filter(c => c.length > 0),
-            difficulty: data.difficulty_name,
+            difficulty: data.difficulty_name || 'Unknown',
             timeLimit: data.max_time_limit ? `${data.max_time_limit}s` : undefined,
-            testCases,
+            memoryLimit: data.memory_limit ? `${data.memory_limit} MB` : undefined,
+            testCases: testCases.length > 0 ? testCases : [{ input: '', output: '', sample: true }],
             language: 'cpp',
             template: '#include <iostream>\nusing namespace std;\n\nint main() {\n    // Your code here\n    return 0;\n}\n'
         };

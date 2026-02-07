@@ -380,18 +380,10 @@ class ProblemViewProvider {
     <div id="app">
         <div class="fetch-form">
             <div class="form-title">FETCH PROBLEM</div>
-            
-            <div class="form-group">
-                <label class="form-label">PLATFORM</label>
-                <select id="platform" class="form-input">
-                    <option value="AtCoder">AtCoder</option>
-                    <option value="HackerRank">HackerRank</option>
-                </select>
-            </div>
 
             <div class="form-group">
-                <label class="form-label">PROBLEM URL</label>
-                <input type="text" id="problemUrl" class="form-input" placeholder="https://..." />
+                <label class="form-label">PROBLEM URL (HackerRank)</label>
+                <input type="text" id="problemUrl" class="form-input" placeholder="https://www.hackerrank.com/challenges/..." />
             </div>
 
             <button class="btn-fetch" onclick="fetchProblem()">FETCH PROBLEM</button>
@@ -524,7 +516,6 @@ class ProblemViewProvider {
         }
 
         function fetchProblem() {
-            const platform = document.getElementById('platform').value;
             const url = document.getElementById('problemUrl').value.trim();
             
             if (!url) {
@@ -534,7 +525,7 @@ class ProblemViewProvider {
             
             vscode.postMessage({ 
                 type: 'fetchProblem', 
-                platform: platform,
+                platform: 'HackerRank',
                 url: url 
             });
         }
