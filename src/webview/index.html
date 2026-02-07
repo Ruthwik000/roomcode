@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DSA Contest</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1 id="questionTitle">Loading...</h1>
+        <div class="room-code" id="roomCode" style="display: none;">
+          Room Code: <span id="roomCodeValue"></span>
+          <button id="copyRoomCode" class="copy-btn">Copy</button>
+        </div>
+      </div>
+      <div class="timer" id="timer">Time: 00:00:00</div>
+    </div>
+
+    <div class="content">
+      <div class="question-panel">
+        <div class="difficulty" id="difficulty"></div>
+        <div class="description" id="description"></div>
+      </div>
+
+      <div class="code-panel">
+        <div class="controls">
+          <select id="languageSelect">
+            <option value="python">Python</option>
+            <option value="cpp">C++</option>
+            <option value="java">Java</option>
+          </select>
+          <button id="runButton">Run Code</button>
+        </div>
+
+        <div class="verdict-banner" id="verdictBanner"></div>
+
+        <div class="results-panel" id="resultsPanel">
+          <h3>Test Results</h3>
+          <div id="testResults"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

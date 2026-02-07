@@ -1,15 +1,15 @@
 {
-  "name": "competitive-coding-helper",
-  "displayName": "Competitive Coding Helper",
-  "description": "Practice competitive programming with random problems, automated testing, and smart test case generation",
+  "name": "dsa-contest-rooms",
+  "displayName": "DSA Contest Rooms - Competitive Programming Helper",
+  "description": "Contest-style collaborative DSA practice with HackerRank integration, mock judge, and smart test generation",
   "version": "1.0.0",
-  "publisher": "your-publisher-name",
+  "publisher": "dsa-publisher",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Ruthwik000/roomcode.git"
+    "url": "https://github.com/Ruthwik000/roomcode"
   },
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.80.0"
   },
   "categories": [
     "Other",
@@ -17,88 +17,95 @@
   ],
   "keywords": [
     "competitive programming",
+    "dsa",
+    "contest",
     "hackerrank",
-    "coding practice",
     "algorithms",
+    "coding practice",
     "test runner"
   ],
-  "activationEvents": [
-    "onCommand:competitiveCoding.fetchProblem",
-    "onCommand:competitiveCoding.submitSolution",
-    "onView:competitiveCodingView"
-  ],
-  "main": "./extension.js",
+  "activationEvents": [],
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "competitiveCoding.fetchRandomProblem",
-        "title": "Fetch Random Problem",
-        "icon": "$(symbol-misc)"
+        "command": "dsaRoom.createRoom",
+        "title": "DSA: Create Contest Room",
+        "icon": "$(organization)"
       },
       {
-        "command": "competitiveCoding.fetchProblem",
-        "title": "Fetch Problem",
-        "icon": "$(cloud-download)"
+        "command": "dsaRoom.joinRoom",
+        "title": "DSA: Join Contest Room",
+        "icon": "$(sign-in)"
       },
       {
-        "command": "competitiveCoding.submitSolution",
-        "title": "Submit Solution",
-        "icon": "$(cloud-upload)"
-      },
-      {
-        "command": "competitiveCoding.runTests",
-        "title": "Run Sample Tests",
+        "command": "dsaRoom.runCode",
+        "title": "DSA: Run Code",
         "icon": "$(play)"
       },
       {
-        "command": "competitiveCoding.generateTests",
-        "title": "Generate & Run More Tests",
+        "command": "dsaRoom.fetchRandomProblem",
+        "title": "DSA: Fetch Random Problem",
+        "icon": "$(symbol-misc)"
+      },
+      {
+        "command": "dsaRoom.fetchProblem",
+        "title": "DSA: Fetch Problem by URL",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "dsaRoom.runTests",
+        "title": "DSA: Run Sample Tests",
         "icon": "$(beaker)"
       },
       {
-        "command": "competitiveCoding.showProblem",
-        "title": "Show Problem",
-        "icon": "$(book)"
+        "command": "dsaRoom.generateTests",
+        "title": "DSA: Generate & Run More Tests",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "dsaRoom.submitSolution",
+        "title": "DSA: Submit Solution",
+        "icon": "$(cloud-upload)"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "competitive-coding",
-          "title": "Competitive Coding",
+          "id": "dsa-contest",
+          "title": "DSA Contest",
           "icon": "$(code)"
         }
       ]
     },
     "views": {
-      "competitive-coding": [
+      "dsa-contest": [
         {
           "type": "webview",
-          "id": "competitiveCodingView",
-          "name": "Problem Viewer"
+          "id": "dsaContestView",
+          "name": "Contest Room"
         }
       ]
-    },
-    "configuration": {
-      "title": "Competitive Coding Helper",
-      "properties": {
-        "competitiveCoding.atcoder.username": {
-          "type": "string",
-          "default": "",
-          "description": "AtCoder username"
-        },
-        "competitiveCoding.hackerrank.apiKey": {
-          "type": "string",
-          "default": "",
-          "description": "HackerRank API key"
-        }
-      }
     }
   },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^18.x",
+    "@types/vscode": "^1.80.0",
+    "@vscode/vsce": "^3.7.1",
+    "typescript": "^5.0.0"
+  },
   "dependencies": {
+    "ably": "^1.2.48",
     "axios": "^1.6.0",
     "axios-cookiejar-support": "^6.0.5",
     "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^17.2.3",
     "tough-cookie": "^4.1.3"
   }
 }

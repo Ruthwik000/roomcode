@@ -1,228 +1,314 @@
-# Competitive Coding Helper
+# DSA Contest Rooms - Competitive Programming Helper
 
-> A production-ready VS Code extension for competitive programming practice with HackerRank integration
+> A production-ready VS Code extension for competitive programming practice with contest rooms, HackerRank integration, and collaborative features
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/Ruthwik000/roomcode)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## ✨ Features
 
-- 🎲 **Random Problem Selection** - Fetch problems by difficulty and topic
-- 🔍 **Direct URL Fetch** - Import any HackerRank problem instantly
-- 📝 **Auto-Generated Templates** - Start coding immediately with language-specific templates
-- 🧪 **Sample Test Execution** - Run provided test cases locally
-- 🔬 **Smart Test Generation** - Automatically generate additional test cases based on problem patterns
-- 🚀 **Browser Submission** - One-click submission with clipboard integration
-- 💾 **Workspace Organization** - Each problem gets its own folder with all resources
+### 🏆 Contest Mode
+- **Create Contest Rooms** - Host coding contests with custom problems
+- **Join Rooms** - Collaborate with friends using room codes
+- **Real-time Judging** - Instant feedback on test cases
+- **Timer & Leaderboard** - Track progress and compete
+
+### 🎯 Practice Mode
+- **Random Problems** - Fetch by difficulty (Easy/Medium/Hard) and topic
+- **HackerRank Integration** - Import any problem instantly
+- **Smart Test Generation** - Auto-generate additional test cases
+- **Local Testing** - Run tests without submitting
+
+### 🚀 Developer Experience
+- **Multi-language Support** - C++, Python, Java, JavaScript, Go
+- **Beautiful UI** - Modern webview interface
+- **Auto-templates** - Start coding immediately
+- **Browser Submission** - One-click submission with clipboard
 
 ## 📦 Installation
 
+### Prerequisites
+- VS Code 1.80.0 or higher
+- Node.js 18.x or higher
+- Compiler for your language (g++, python3, javac, etc.)
+
 ### From Source
 
-1. Clone the repository:
 ```bash
+# Clone the repository
 git clone https://github.com/Ruthwik000/roomcode.git
 cd roomcode
-```
 
-2. Install dependencies:
-```bash
+# Install dependencies
 npm install
-```
 
-3. Launch in development mode:
-```bash
-# Press F5 in VS Code
-# OR
+# Compile TypeScript
+npm run compile
+
+# Launch in development mode
 code --extensionDevelopmentPath=.
+# OR press F5 in VS Code
 ```
 
-### From VSIX (Coming Soon)
+### Build VSIX Package
 
 ```bash
-code --install-extension competitive-coding-helper-1.0.0.vsix
+npm run package
+# Installs: dsa-contest-rooms-1.0.0.vsix
 ```
 
 ## 🚀 Quick Start
 
-### 1. Open a Workspace Folder
+### Contest Mode
 
+**1. Create a Contest Room**
 ```
-File > Open Folder
+Ctrl+Shift+P → "DSA: Create Contest Room"
 ```
+- Set duration and difficulty
+- Share room code with friends
+- Start coding together!
 
-Create or select a folder where your problems will be saved.
-
-### 2. Fetch a Problem
-
-**Option A: Random Problem**
-- Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac)
-- Type "Fetch Random Problem"
-- Select category:
-  - Easy Algorithms
-  - Medium Algorithms
-  - Hard Algorithms
-  - Easy Data Structures
-
-**Option B: Specific Problem**
-- Open the Competitive Coding sidebar
-- Enter HackerRank URL: `https://www.hackerrank.com/challenges/[problem-name]/problem`
-- Click "FETCH PROBLEM"
-
-### 3. Write Your Solution
-
-The extension creates a folder structure:
+**2. Join a Contest Room**
 ```
-problem-name/
-├── problem.json          # Problem metadata
-├── testcases.json        # Test cases
-└── solution.cpp          # Your solution (or .py, .java, etc.)
+Ctrl+Shift+P → "DSA: Join Contest Room"
 ```
+- Enter room code
+- View problem and timer
+- Submit solutions
 
-### 4. Test Your Solution
+**3. Run Your Code**
+```
+Ctrl+Shift+P → "DSA: Run Code"
+```
+- Instant feedback on test cases
+- See which tests passed/failed
+- Track your progress
 
-**Run Sample Tests:**
-```
-Ctrl+Shift+P → "Run Sample Tests"
-```
+### Practice Mode
 
-**Generate & Run More Tests:**
+**1. Fetch Random Problem**
 ```
-Ctrl+Shift+P → "Generate & Run More Tests"
+Ctrl+Shift+P → "DSA: Fetch Random Problem"
 ```
-- Generates 5+ additional test cases
-- Includes edge cases (empty input, large numbers, boundaries)
-- Validates against all tests
+- Select category (Easy/Medium/Hard Algorithms or Data Structures)
+- Problem fetched with test cases
+- Start solving!
 
-### 5. Submit Your Solution
+**2. Fetch Specific Problem**
+```
+Ctrl+Shift+P → "DSA: Fetch Problem by URL"
+```
+- Enter HackerRank URL
+- Complete problem statement extracted
+- All test cases included
 
+**3. Test Your Solution**
 ```
-Ctrl+Shift+P → "Submit Solution"
+Ctrl+Shift+P → "DSA: Run Sample Tests"
 ```
-- Code is copied to clipboard
+- Run provided test cases locally
+- See detailed results
+
+**4. Generate More Tests**
+```
+Ctrl+Shift+P → "DSA: Generate & Run More Tests"
+```
+- Auto-generates 5+ test cases
+- Includes edge cases
+- Comprehensive validation
+
+**5. Submit Solution**
+```
+Ctrl+Shift+P → "DSA: Submit Solution"
+```
+- Code copied to clipboard
 - Browser opens to submission page
-- Login and paste your code
-- Submit!
-
-## 🎯 Supported Languages
-
-| Language   | Compiler/Interpreter Required |
-|------------|-------------------------------|
-| C++        | g++ (with C++17 support)      |
-| Python     | python3                       |
-| Java       | javac + java                  |
-| JavaScript | node                          |
-| Go         | go                            |
+- Login and paste!
 
 ## 📋 Commands
 
-| Command                          | Description                                    |
-|----------------------------------|------------------------------------------------|
-| `Fetch Random Problem`           | Get a random problem by category               |
-| `Fetch Problem`                  | Fetch specific problem by URL                  |
-| `Run Sample Tests`               | Execute provided test cases                    |
-| `Generate & Run More Tests`      | Create and run additional test cases           |
-| `Submit Solution`                | Open browser for submission                    |
-| `Show Problem`                   | Display problem in sidebar                     |
+| Command | Description | Shortcut |
+|---------|-------------|----------|
+| `DSA: Create Contest Room` | Host a new contest | - |
+| `DSA: Join Contest Room` | Join existing contest | - |
+| `DSA: Run Code` | Execute in contest mode | - |
+| `DSA: Fetch Random Problem` | Get random problem | - |
+| `DSA: Fetch Problem by URL` | Import from HackerRank | - |
+| `DSA: Run Sample Tests` | Test with samples | - |
+| `DSA: Generate & Run More Tests` | Smart test generation | - |
+| `DSA: Submit Solution` | Submit via browser | - |
 
-## 🔧 Configuration
+## 🎨 UI Features
 
-No configuration required! The extension works out of the box.
+### Contest Room Interface
+- **Clean Design** - Modern, distraction-free interface
+- **Split View** - Problem on left, results on right
+- **Live Timer** - Countdown to contest end
+- **Verdict Banner** - Instant feedback (Accepted/Wrong Answer/etc.)
+- **Test Results** - Detailed pass/fail for each test case
+- **Room Code Display** - Easy sharing with copy button
 
-Optional settings (coming soon):
-- Default programming language
-- Custom test timeout
-- Auto-save before testing
+### Practice Interface
+- **Problem Viewer** - Formatted problem statements
+- **Test Case Display** - Input/output examples
+- **Result Visualization** - Color-coded test results
+- **Progress Tracking** - See which tests passed
 
 ## 🏗️ Project Structure
 
 ```
-competitive-coding-helper/
-├── extension.js              # Main extension logic
-├── package.json              # Extension manifest
+dsa-contest-rooms/
 ├── src/
-│   ├── hackerrank.js        # HackerRank API integration
-│   ├── randomProblem.js     # Random problem selection
-│   ├── testRunner.js        # Test execution engine
-│   ├── testGenerator.js     # Smart test case generation
-│   ├── webview.js           # UI components
-│   └── utils.js             # Utility functions
-└── README.md
+│   ├── extension.ts           # Main extension entry
+│   ├── types.ts               # TypeScript interfaces
+│   ├── config.ts              # Configuration
+│   ├── executor.ts            # Code execution engine
+│   ├── mockData.ts            # Sample data
+│   ├── commands/
+│   │   ├── createRoom.ts      # Contest creation
+│   │   └── joinRoom.ts        # Room joining
+│   ├── webview/
+│   │   ├── index.html         # Contest UI
+│   │   ├── app.js             # UI logic
+│   │   └── styles.css         # Styling
+│   ├── hackerrank.js          # HackerRank API
+│   ├── randomProblem.js       # Problem selection
+│   ├── testRunner.js          # Test execution
+│   ├── testGenerator.js       # Test generation
+│   ├── errorHandler.js        # Error handling
+│   └── utils.js               # Utilities
+├── package.json               # Extension manifest
+├── tsconfig.json              # TypeScript config
+├── .vscodeignore              # Package exclusions
+└── README.md                  # This file
 ```
 
-## 🧪 Test Generation
+## 🔧 Configuration
 
-The extension intelligently generates test cases based on problem patterns:
+### Environment Variables (Optional)
 
-- **Array Sum Problems**: Random arrays with calculated sums
-- **Min/Max Problems**: Arrays with known min/max values
-- **Comparison Problems**: Paired inputs with expected comparisons
-- **Counting Problems**: Arrays with target counting
-- **String Problems**: Random strings with length validation
-- **Edge Cases**: Empty inputs, single elements, boundary values
+Create `.env` file:
+```env
+ABLY_API_KEY=your_ably_key_here  # For real-time collaboration
+```
+
+### Supported Languages
+
+| Language | Compiler/Interpreter | Version |
+|----------|---------------------|---------|
+| C++ | g++ | C++17+ |
+| Python | python3 | 3.7+ |
+| Java | javac + java | 11+ |
+| JavaScript | node | 14+ |
+| Go | go | 1.16+ |
+
+## 🧪 Testing
+
+### Run Sample Tests
+Tests your code against provided examples
+
+### Generate Tests
+Intelligently creates test cases based on:
+- **Array Problems** - Random arrays with known results
+- **String Problems** - Various string patterns
+- **Math Problems** - Edge cases and boundaries
+- **Graph Problems** - Different graph structures
 
 ## 🐛 Troubleshooting
 
-### Problem: "Please open a workspace folder first"
-**Solution**: Go to File > Open Folder and select/create a folder
+### "No workspace folder open"
+**Solution**: File > Open Folder, then select/create a folder
 
-### Problem: Compilation errors
-**Solution**: Ensure compiler is installed and in PATH
+### Compilation errors
+**Solution**: Ensure compiler is installed
 ```bash
-# Check C++
-g++ --version
-
-# Check Python
-python --version
-
-# Check Java
-javac -version
+g++ --version    # C++
+python --version # Python
+javac -version   # Java
+node --version   # JavaScript
+go version       # Go
 ```
 
-### Problem: Test cases not running
-**Solution**: 
-1. Save your file first (Ctrl+S)
-2. Ensure testcases.json exists in problem folder
-3. Check compiler output for syntax errors
+### "Cannot find module"
+**Solution**: Reinstall dependencies
+```bash
+npm install
+npm run compile
+```
 
-### Problem: Characters not displaying correctly
-**Solution**: The latest version includes UTF-8 encoding support. Update to v1.0.0+
+### Contest room not connecting
+**Solution**: Check Ably API key in `.env` file
+
+### Characters not displaying
+**Solution**: UTF-8 encoding is now supported (v1.0.0+)
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions welcome! Please:
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
 
-## 📝 License
+## 📝 Development
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Setup
+```bash
+npm install
+npm run compile
+```
+
+### Watch Mode
+```bash
+npm run watch
+```
+
+### Package Extension
+```bash
+npm run package
+```
+
+## 🗺️ Roadmap
+
+- [x] Contest room creation
+- [x] Real-time collaboration
+- [x] HackerRank integration
+- [x] Smart test generation
+- [x] Multi-language support
+- [ ] LeetCode integration
+- [ ] Codeforces integration
+- [ ] Leaderboard system
+- [ ] Solution history
+- [ ] Code snippets library
+- [ ] Performance analytics
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- HackerRank for providing the problem platform
-- VS Code Extension API documentation
+- HackerRank for problem platform
+- Ably for real-time infrastructure
+- VS Code Extension API
 - The competitive programming community
 
 ## 📧 Support
 
-- 🐛 [Report a bug](https://github.com/Ruthwik000/roomcode/issues)
-- 💡 [Request a feature](https://github.com/Ruthwik000/roomcode/issues)
+- 🐛 [Report Bug](https://github.com/Ruthwik000/roomcode/issues)
+- 💡 [Request Feature](https://github.com/Ruthwik000/roomcode/issues)
 - 📖 [Documentation](https://github.com/Ruthwik000/roomcode/wiki)
 
-## 🗺️ Roadmap
+## 🌟 Show Your Support
 
-- [ ] Support for more platforms (Codeforces, LeetCode)
-- [ ] Contest mode with timer
-- [ ] Solution history and statistics
-- [ ] Code snippets library
-- [ ] Collaborative problem solving
-- [ ] Performance analytics
+Give a ⭐️ if this project helped you!
 
 ---
 
 **Made with ❤️ for competitive programmers**
+
+**Status: Production Ready ✅**
