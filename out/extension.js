@@ -505,7 +505,29 @@ function getWebviewContent(cssUri, jsUri) {
       background: var(--vscode-editor-background);
       color: var(--vscode-editor-foreground);
     }
-    .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-size: 18px;
+    }
+    .loading-spinner {
+      border: 4px solid var(--vscode-panel-border);
+      border-top: 4px solid var(--vscode-textLink-foreground);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .container { padding: 20px; max-width: 1200px; margin: 0 auto; display: none; }
+    .container.loaded { display: block; }
     .header {
       display: flex;
       justify-content: space-between;
@@ -603,7 +625,11 @@ function getWebviewContent(cssUri, jsUri) {
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="loading" id="loadingScreen">
+    <div class="loading-spinner"></div>
+    <div>Loading Contest Room...</div>
+  </div>
+  <div class="container" id="contestContainer">
     <div class="header">
       <div>
         <h1 id="questionTitle">Loading...</h1>
@@ -654,6 +680,10 @@ function getWebviewContent(cssUri, jsUri) {
     });
 
     function loadQuestion(data) {
+      // Hide loading, show content
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('contestContainer').classList.add('loaded');
+      
       currentQuestion = data.question;
       contestEndTime = data.contestEndTime;
       document.getElementById('questionTitle').textContent = currentQuestion.title;
