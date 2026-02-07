@@ -1,0 +1,91 @@
+{
+  "name": "competitive-coding-helper",
+  "displayName": "Competitive Coding Helper",
+  "description": "Fetch problems and submit solutions to AtCoder and HackerRank",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:competitiveCoding.fetchProblem",
+    "onCommand:competitiveCoding.submitSolution",
+    "onView:competitiveCodingView"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "competitiveCoding.fetchRandomProblem",
+        "title": "Fetch Random Problem",
+        "icon": "$(symbol-misc)"
+      },
+      {
+        "command": "competitiveCoding.fetchProblem",
+        "title": "Fetch Problem",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "competitiveCoding.submitSolution",
+        "title": "Submit Solution",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "competitiveCoding.runTests",
+        "title": "Run Sample Tests",
+        "icon": "$(play)"
+      },
+      {
+        "command": "competitiveCoding.generateTests",
+        "title": "Generate & Run More Tests",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "competitiveCoding.showProblem",
+        "title": "Show Problem",
+        "icon": "$(book)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "competitive-coding",
+          "title": "Competitive Coding",
+          "icon": "$(code)"
+        }
+      ]
+    },
+    "views": {
+      "competitive-coding": [
+        {
+          "type": "webview",
+          "id": "competitiveCodingView",
+          "name": "Problem Viewer"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Competitive Coding Helper",
+      "properties": {
+        "competitiveCoding.atcoder.username": {
+          "type": "string",
+          "default": "",
+          "description": "AtCoder username"
+        },
+        "competitiveCoding.hackerrank.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "HackerRank API key"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "axios-cookiejar-support": "^6.0.5",
+    "cheerio": "^1.0.0-rc.12",
+    "tough-cookie": "^4.1.3"
+  }
+}
