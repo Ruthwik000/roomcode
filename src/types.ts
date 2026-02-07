@@ -6,11 +6,13 @@ export interface TestCase {
 export interface Question {
   id: string;
   title: string;
-  topic: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  topic?: string;
+  difficulty: "Easy" | "Medium" | "Hard" | string;
   description: string;
   language: "cpp" | "java" | "python";
   testCases: TestCase[];
+  timeLimit?: number;
+  memoryLimit?: number;
 }
 
 export interface TestResult {
@@ -30,4 +32,6 @@ export interface ContestRoom {
   questions: Question[];
   startTime: number;
   duration: number;
+  status?: 'waiting' | 'active' | 'ended';
+  participants?: string[];
 }

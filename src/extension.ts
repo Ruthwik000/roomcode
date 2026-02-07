@@ -28,7 +28,32 @@ export function activate(context: vscode.ExtensionContext) {
       currentRoom = await createRoom(context);
       if (currentRoom && currentRoom.questions.length > 0) {
         currentQuestion = currentRoom.questions[0];
-        showWebview(context);
+        
+        // Ask if user wants to start now
+        const action = await vscode.window.showInformationMessage(
+          `Room created! Code: ${currentRoom.id}`,
+          'Start Contest Now',
+          'Copy Room Code',
+          'Cancel'
+        );
+
+        if (action === 'Copy Room Code') {
+          vscode.env.clipboard.writeText(currentRoom.id);
+          vscode.window.showInformationMessage('Room code copied! Share with participants.');
+          
+          // Ask again if they want to start
+          const startAction = await vscode.window.showInformationMessage(
+            'Ready to start the contest?',
+            'Start Contest',
+            'Wait'
+          );
+          
+          if (startAction === 'Start Contest') {
+            startContest(context);
+          }
+        } else if (action === 'Start Contest Now') {
+          startContest(context);
+        }
       }
     })
   );
@@ -38,11 +63,27 @@ export function activate(context: vscode.ExtensionContext) {
       currentRoom = await joinRoom();
       if (currentRoom && currentRoom.questions.length > 0) {
         currentQuestion = currentRoom.questions[0];
+        
+        vscode.window.showInformationMessage(
+          `Joined contest with ${currentRoom.questions.length} questions. Waiting for host to start...`
+        );
+        
+        // Show webview in waiting state
         showWebview(context);
-        vscode.window.showInformationMessage(`Joined contest with ${currentRoom.questions.length} questions`);
       } else if (currentRoom === undefined) {
         vscode.window.showWarningMessage('Could not join room. Please check the room code.');
       }
+    })
+  );
+
+  // Add Start Contest command
+  context.subscriptions.push(
+    vscode.commands.registerCommand('dsaRoom.startContest', () => {
+      if (!currentRoom) {
+        vscode.window.showErrorMessage('No active room. Create or join a room first.');
+        return;
+      }
+      startContest(context);
     })
   );
 
@@ -343,6 +384,139 @@ export function activate(context: vscode.ExtensionContext) {
       }
     })
   );
+}
+
+function startContest(context: vscode.ExtensionContext) {
+  if (!currentRoom) return;
+  
+  // Update room status
+  currentRoom.status = 'active';
+  currentRoom.startTime = Date.now();
+  
+  // Show webview with contest
+  showWebview(context);
+  
+  vscode.window.showInformationMessage(
+    `Contest started! Duration: ${Math.floor(currentRoom.duration / 60000)} minutes`
+  );
+  
+  // Set timer to end contest
+  setTimeout(() => {
+    endContest(context);
+  }, currentRoom.duration);
+}
+
+function endContest(context: vscode.ExtensionContext) {
+  if (!currentRoom) return;
+  
+  currentRoom.status = 'ended';
+  
+  vscode.window.showInformationMessage(
+    'Contest ended! Calculating results...',
+    'View Results'
+  ).then(action => {
+    if (action === 'View Results') {
+      showResults(context);
+    }
+  });
+}
+
+function showResults(context: vscode.ExtensionContext) {
+  if (!currentPanel) {
+    currentPanel = vscode.window.createWebviewPanel(
+      'dsaResults',
+      'Contest Results',
+      vscode.ViewColumn.Two,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true
+      }
+    );
+  }
+  
+  currentPanel.webview.html = getResultsHtml();
+}
+
+function getResultsHtml(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contest Results</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--vscode-editor-background);
+      color: var(--vscode-editor-foreground);
+      padding: 40px;
+    }
+    .results-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: var(--vscode-textLink-foreground);
+      margin-bottom: 40px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .stat-card {
+      background: var(--vscode-editor-background);
+      border: 1px solid var(--vscode-panel-border);
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: var(--vscode-textLink-foreground);
+    }
+    .stat-label {
+      font-size: 14px;
+      color: var(--vscode-descriptionForeground);
+      margin-top: 8px;
+    }
+    .message {
+      text-align: center;
+      font-size: 18px;
+      padding: 30px;
+      background: var(--vscode-editor-background);
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="results-container">
+    <h1>🏆 Contest Completed!</h1>
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value">${currentRoom?.questions.length || 0}</div>
+        <div class="stat-label">Problems</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${Math.floor((currentRoom?.duration || 0) / 60000)}</div>
+        <div class="stat-label">Minutes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${currentRoom?.participants?.length || 1}</div>
+        <div class="stat-label">Participants</div>
+      </div>
+    </div>
+    <div class="message">
+      <p>Thank you for participating!</p>
+      <p>Check your solutions and compare with others.</p>
+    </div>
+  </div>
+</body>
+</html>`;
 }
 
 function showWebview(context: vscode.ExtensionContext) {

@@ -44,6 +44,11 @@
         "icon": "$(play)"
       },
       {
+        "command": "dsaRoom.startContest",
+        "title": "DSA: Start Contest",
+        "icon": "$(debug-start)"
+      },
+      {
         "command": "dsaRoom.fetchRandomProblem",
         "title": "DSA: Fetch Random Problem",
         "icon": "$(symbol-misc)"
@@ -90,7 +95,8 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && npm run copy-js",
+    "copy-js": "node -e \"require('fs').cpSync('src', 'out', {recursive: true, filter: (src) => src.endsWith('.js')})\"",
     "watch": "tsc -watch -p ./",
     "package": "vsce package"
   },
