@@ -695,6 +695,8 @@ function getWebviewContent(cssUri: vscode.Uri, jsUri: vscode.Uri): string {
       background: var(--vscode-editor-background);
       border: 1px solid var(--vscode-panel-border);
       border-radius: 4px;
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
     }
     .difficulty {
       display: inline-block;
