@@ -520,6 +520,8 @@ function getResultsHtml(): string {
 }
 
 function showWebview(context: vscode.ExtensionContext) {
+  const needsCreate = !currentPanel;
+  
   if (currentPanel) {
     currentPanel.reveal(vscode.ViewColumn.Two);
   } else {
@@ -570,37 +572,50 @@ function showWebview(context: vscode.ExtensionContext) {
             vscode.env.clipboard.writeText(message.payload.roomCode);
             vscode.window.showInformationMessage('Room code copied to clipboard!');
             break;
+            
+          case 'WEBVIEW_READY':
+            // Webview is ready, send data now
+            if (currentQuestion && currentRoom && currentPanel) {
+              currentPanel.webview.postMessage({
+                type: 'LOAD_QUESTION',
+                payload: {
+                  question: currentQuestion,
+                  contestEndTime: currentRoom.startTime + currentRoom.duration,
+                  roomId: currentRoom.id
+                }
+              });
+            }
+            break;
         }
       },
       undefined,
       context.subscriptions
     );
+
+    // Set HTML content
+    const cssPath = currentPanel.webview.asWebviewUri(
+      vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview', 'styles.css'))
+    );
+    const jsPath = currentPanel.webview.asWebviewUri(
+      vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview', 'app.js'))
+    );
+
+    currentPanel.webview.html = getWebviewContent(cssPath, jsPath);
   }
 
-  // Load HTML content
-  const htmlPath = vscode.Uri.file(
-    path.join(context.extensionPath, 'src', 'webview', 'index.html')
-  );
-  const cssPath = currentPanel.webview.asWebviewUri(
-    vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview', 'styles.css'))
-  );
-  const jsPath = currentPanel.webview.asWebviewUri(
-    vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview', 'app.js'))
-  );
-
-  currentPanel.webview.html = getWebviewContent(cssPath, jsPath);
-
-  // Send question data
-  if (currentQuestion && currentRoom) {
-    currentPanel.webview.postMessage({
-      type: 'LOAD_QUESTION',
-      payload: {
-        question: currentQuestion,
-        contestEndTime: currentRoom.startTime + currentRoom.duration,
-        roomId: currentRoom.id
-      }
-    });
-  }
+  // Send question data with delay to ensure webview is ready
+  setTimeout(() => {
+    if (currentQuestion && currentRoom && currentPanel) {
+      currentPanel.webview.postMessage({
+        type: 'LOAD_QUESTION',
+        payload: {
+          question: currentQuestion,
+          contestEndTime: currentRoom.startTime + currentRoom.duration,
+          roomId: currentRoom.id
+        }
+      });
+    }
+  }, needsCreate ? 500 : 100); // Longer delay if creating new panel
 }
 
 function getWebviewContent(cssUri: vscode.Uri, jsUri: vscode.Uri): string {
@@ -779,6 +794,9 @@ function getWebviewContent(cssUri: vscode.Uri, jsUri: vscode.Uri): string {
     const vscode = acquireVsCodeApi();
     let currentQuestion = null;
     let contestEndTime = null;
+
+    // Notify extension that webview is ready
+    vscode.postMessage({ type: 'WEBVIEW_READY' });
 
     window.addEventListener('message', event => {
       const message = event.data;
