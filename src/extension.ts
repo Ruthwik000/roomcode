@@ -1,19 +1,28 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs/promises';
 import { createRoom } from './commands/createRoom';
 import { joinRoom } from './commands/joinRoom';
 import { CodeExecutor } from './executor';
 import { ContestRoom, Question } from './types';
 
+// Import JavaScript modules for competitive coding features
+const hackerrank = require('./hackerrank.js');
+const randomProblem = require('./randomProblem.js');
+const { runTests } = require('./testRunner.js');
+const testGenerator = require('./testGenerator.js');
+
 let currentPanel: vscode.WebviewPanel | undefined;
 let currentRoom: ContestRoom | undefined;
 let currentQuestion: Question | undefined;
+let currentProblemData: any = null;
+let currentProblemUrl: string | null = null;
 const executor = new CodeExecutor();
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('DSA Contest Rooms extension activated');
 
-  // Register commands
+  // Contest Mode Commands
   context.subscriptions.push(
     vscode.commands.registerCommand('dsaRoom.createRoom', async () => {
       currentRoom = await createRoom(context);
@@ -66,6 +75,271 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage(`Verdict: ${result.verdict}`);
       } catch (error: any) {
         vscode.window.showErrorMessage(`Execution failed: ${error.message}`);
+      }
+    })
+  );
+
+  // Competitive Coding Commands
+  
+  // Fetch Random Problem
+  context.subscriptions.push(
+    vscode.commands.registerCommand('dsaRoom.fetchRandomProblem', async () => {
+      try {
+        const categories = randomProblem.getCategories();
+        const category = await vscode.window.showQuickPick(categories, {
+          placeHolder: 'Select problem category'
+        });
+
+        if (!category) return;
+
+        vscode.window.showInformationMessage('Fetching random problem...');
+
+        const problem = await randomProblem.getRandomProblem(category);
+        vscode.window.showInformationMessage(`Found: ${problem.title} (${problem.difficulty})`);
+
+        const problemData = await hackerrank.fetchProblem(problem.url);
+        currentProblemData = problemData;
+        currentProblemUrl = problem.url;
+
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspaceFolder) {
+          const action = await vscode.window.showErrorMessage(
+            'No folder is open. Please open a folder first (File > Open Folder)',
+            'Help'
+          );
+          if (action === 'Help') {
+            vscode.window.showInformationMessage('Go to File menu > Open Folder, then select or create a folder for your coding problems');
+          }
+          return;
+        }
+
+        const problemFolder = path.join(workspaceFolder, problemData.id);
+        await fs.mkdir(problemFolder, { recursive: true });
+
+        await fs.writeFile(
+          path.join(problemFolder, 'problem.json'),
+          JSON.stringify(problemData, null, 2)
+        );
+
+        await fs.writeFile(
+          path.join(problemFolder, 'testcases.json'),
+          JSON.stringify(problemData.testCases, null, 2)
+        );
+
+        const solutionPath = path.join(problemFolder, `solution.${problemData.language || 'cpp'}`);
+        await fs.writeFile(solutionPath, problemData.template || '');
+
+        const doc = await vscode.workspace.openTextDocument(solutionPath);
+        await vscode.window.showTextDocument(doc);
+
+        vscode.window.showInformationMessage(`Problem ready: ${problemData.title}`);
+      } catch (error: any) {
+        vscode.window.showErrorMessage(`Error: ${error.message}`);
+      }
+    })
+  );
+
+  // Fetch Problem by URL
+  context.subscriptions.push(
+    vscode.commands.registerCommand('dsaRoom.fetchProblem', async () => {
+      const problemUrl = await vscode.window.showInputBox({
+        prompt: 'Enter HackerRank problem URL',
+        placeHolder: 'https://www.hackerrank.com/challenges/...'
+      });
+
+      if (!problemUrl) return;
+
+      try {
+        vscode.window.showInformationMessage('Fetching problem from HackerRank...');
+        
+        const problemData = await hackerrank.fetchProblem(problemUrl);
+        currentProblemData = problemData;
+        currentProblemUrl = problemUrl;
+
+        const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspaceFolder) {
+          const action = await vscode.window.showErrorMessage(
+            'No folder is open. Please open a folder first (File > Open Folder)',
+            'Help'
+          );
+          if (action === 'Help') {
+            vscode.window.showInformationMessage('Go to File menu > Open Folder, then select or create a folder for your coding problems');
+          }
+          return;
+        }
+
+        const problemFolder = path.join(workspaceFolder, problemData.id);
+        await fs.mkdir(problemFolder, { recursive: true });
+
+        await fs.writeFile(
+          path.join(problemFolder, 'problem.json'),
+          JSON.stringify(problemData, null, 2)
+        );
+
+        await fs.writeFile(
+          path.join(problemFolder, 'testcases.json'),
+          JSON.stringify(problemData.testCases, null, 2)
+        );
+
+        const solutionPath = path.join(problemFolder, `solution.${problemData.language || 'cpp'}`);
+        await fs.writeFile(solutionPath, problemData.template || '');
+
+        const doc = await vscode.workspace.openTextDocument(solutionPath);
+        await vscode.window.showTextDocument(doc);
+
+        vscode.window.showInformationMessage(`Problem fetched: ${problemData.title}`);
+      } catch (error: any) {
+        vscode.window.showErrorMessage(`Error: ${error.message}`);
+      }
+    })
+  );
+
+  // Run Sample Tests
+  context.subscriptions.push(
+    vscode.commands.registerCommand('dsaRoom.runTests', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showErrorMessage('No active editor');
+        return;
+      }
+
+      try {
+        await editor.document.save();
+
+        const solutionPath = editor.document.fileName;
+        const problemFolder = path.dirname(solutionPath);
+        const testCasesPath = path.join(problemFolder, 'testcases.json');
+
+        let testCases;
+        try {
+          const testCasesData = await fs.readFile(testCasesPath, 'utf8');
+          testCases = JSON.parse(testCasesData);
+        } catch (error) {
+          vscode.window.showErrorMessage('Test cases not found. Please fetch the problem first.');
+          return;
+        }
+
+        vscode.window.showInformationMessage('Running tests...');
+
+        const results = await runTests(solutionPath, testCases);
+
+        if (results.passed === results.total) {
+          vscode.window.showInformationMessage(`✓ All tests passed (${results.passed}/${results.total})`);
+        } else {
+          vscode.window.showWarningMessage(`${results.passed}/${results.total} tests passed`);
+        }
+      } catch (error: any) {
+        vscode.window.showErrorMessage(`Error running tests: ${error.message}`);
+      }
+    })
+  );
+
+  // Generate and Run More Tests
+  context.subscriptions.push(
+    vscode.commands.registerCommand('dsaRoom.generateTests', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showErrorMessage('No active editor');
+        return;
+      }
+
+      try {
+        await editor.document.save();
+
+        const solutionPath = editor.document.fileName;
+        const problemFolder = path.dirname(solutionPath);
+        const problemDataPath = path.join(problemFolder, 'problem.json');
+        const testCasesPath = path.join(problemFolder, 'testcases.json');
+
+        let problemData;
+        try {
+          const problemDataJson = await fs.readFile(problemDataPath, 'utf8');
+          problemData = JSON.parse(problemDataJson);
+        } catch (error) {
+          vscode.window.showErrorMessage('Problem data not found.');
+          return;
+        }
+
+        let existingTests = [];
+        try {
+          const testCasesData = await fs.readFile(testCasesPath, 'utf8');
+          existingTests = JSON.parse(testCasesData);
+        } catch (error) {
+          // No existing tests
+        }
+
+        vscode.window.showInformationMessage('Generating additional test cases...');
+
+        const generatedTests = testGenerator.generateTestCases(problemData, 5);
+        const allTests = [...existingTests, ...generatedTests];
+
+        await fs.writeFile(testCasesPath, JSON.stringify(allTests, null, 2));
+
+        vscode.window.showInformationMessage(`Running ${allTests.length} tests (${generatedTests.length} generated)...`);
+
+        const results = await runTests(solutionPath, allTests);
+
+        if (results.passed === results.total) {
+          vscode.window.showInformationMessage(`✓ All ${results.total} tests passed!`);
+        } else {
+          vscode.window.showWarningMessage(`${results.passed}/${results.total} tests passed`);
+        }
+      } catch (error: any) {
+        vscode.window.showErrorMessage(`Error: ${error.message}`);
+      }
+    })
+  );
+
+  // Submit Solution
+  context.subscriptions.push(
+    vscode.commands.registerCommand('dsaRoom.submitSolution', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showErrorMessage('No active editor');
+        return;
+      }
+
+      try {
+        await editor.document.save();
+
+        let problemUrl = currentProblemUrl;
+        
+        if (!problemUrl) {
+          const problemFolder = path.dirname(editor.document.fileName);
+          const problemDataPath = path.join(problemFolder, 'problem.json');
+          
+          try {
+            const problemDataJson = await fs.readFile(problemDataPath, 'utf8');
+            const problemData = JSON.parse(problemDataJson);
+            
+            if (problemData.id) {
+              problemUrl = `https://www.hackerrank.com/challenges/${problemData.id}/problem`;
+            }
+          } catch (error) {
+            // Couldn't load problem data
+          }
+        }
+
+        if (!problemUrl) {
+          const input = await vscode.window.showInputBox({
+            prompt: 'Enter problem URL',
+            placeHolder: 'https://www.hackerrank.com/challenges/...'
+          });
+          problemUrl = input || null;
+        }
+
+        if (!problemUrl) return;
+
+        const code = editor.document.getText();
+        await vscode.env.clipboard.writeText(code);
+
+        let submitUrl = problemUrl.replace('/problem', '/submissions/code');
+
+        await vscode.env.openExternal(vscode.Uri.parse(submitUrl));
+        
+        vscode.window.showInformationMessage('✓ Code copied to clipboard! Opening submission page in browser...');
+      } catch (error: any) {
+        vscode.window.showErrorMessage(`Error: ${error.message}`);
       }
     })
   );
